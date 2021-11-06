@@ -9,26 +9,29 @@ const Game = {
         value: 0,
         tiles: 0,
     },
-    Events: {
-        playerPositionUpdate: new Event("PlayerPositionUpdate"),
-        gameStateUpdate: new Event("GameStateUpdate")
-    },
     State: {
         tileValues: {
             0: {
                 0: 0
             }
         },
-        lose: (value) => {
-            value = value || Game.Player.value;
-            this.state = value < 10 || value > 10 ? (dispatchEvent("GameStateUpdate"), 1) : 0; 
-        },
-        state: 0
+        state: 0,
+        time: 0,
     },
     Graphics: {
         playerWidth: 50, 
         playerHeight: 50,
-        grid: [10, 10]
+        playerX: 0, 
+        playerY: 0,
+        randomStartX: Math.random() * window.innerWidth * 0.6, 
+        randomStartY: Math.random() * window.innerHeight * 0.6, 
+        playerStep: 50,
+        easing: 0.05,
+        frameRate: 30, 
+    },
+    Rules: {
+        lowerValueBound: 0, 
+        upperValueBound: 100,
     }
 }
 
@@ -41,7 +44,7 @@ const controls = {
     },
     DOWN: {
         keys: [40, 83], 
-        action: () => {move(() => {
+        action: () => {move(() => { 
             Game.Player.pos.y -= 1
         })}
     },
@@ -72,43 +75,77 @@ function move(act) {
     act(); 
     const pos = Game.Player.pos;
     if (!Game.State.tileValues[pos.x]) Game.State.tileValues[pos.x] = {};
-    let inc = 0; 
-    if (Game.State.tileValues[pos.x][pos.y] !== undefined) {
-        inc = Game.State.tileValues[pos.x][pos.y] * -2;
-    } else {
-        inc = Math.floor(Math.random() * 10);
-    }
-    // const inc = Game.State.tileValues[pos.x][pos.y] ? Game.State.tileValues[pos.x][pos.y] * -2 : Math.floor(Math.random() * 10);
+    const inc = Game.State.tileValues[pos.x][pos.y] !== undefined ? Game.State.tileValues[pos.x][pos.y] * -2 : Math.floor(Math.random() * 10);
     Game.State.tileValues[pos.x][pos.y] = inc; 
     Game.Player.value += inc;
-    dispatchEvent(Game.Events.playerPositionUpdate);
+    loseSequence();
 }
 
 // Game Events
 
-document.onkeyup = keyHandler;
-document.addEventListener("PlayerPositionUpdate", () => { Game.State.lose();  });
-document.addEventListener("GameStateUpdate", () => { return loseSequence() })
+document.onkeydown = keyHandler;
 
 // Graphics
 
+const getX = (n) => {
+    return ((n || Game.Player.pos.x) * Game.Graphics.playerStep) + Game.Graphics.randomStartX;
+}
+
+const getY = (n) => {
+    return (- 1 * (n || Game.Player.pos.y) * Game.Graphics.playerStep) + Game.Graphics.randomStartY;
+}
+
 function setup() {
-    createCanvas(displayWidth, displayHeight);        
+    createCanvas(displayWidth, displayHeight);   
+    frameRate(Game.Graphics.frameRate);
+    Game.Graphics.playerX = getX(); 
+    Game.Graphics.playerY = getY(); 
 } 
 
 function draw() {
-    background(250); 
-
-    // Player
-    fill(color(255, 0, 0));
+    background(10);     
     noStroke(0);
-    rect(((displayWidth / 2) - (Game.Graphics.playerWidth / 2)) + Game.Player.pos.x * 50, ((displayHeight / 2) - (Game.Graphics.playerHeight / 2)) - Game.Player.pos.y * 50, Game.Graphics.playerWidth, Game.Graphics.playerHeight);
-}
 
-function movePlayer() {
+    Game.Player.tiles = 0; 
 
+    Object.keys(Game.State.tileValues).forEach(x => {
+        Object.keys(Game.State.tileValues[x]).forEach(y => {
+            fill(color(
+                    0,
+                    x == 0 && y == 0 ? 40 : 0,
+                    x == 0 && y == 0 ? 0 : 40
+                ))
+            rect(getX(x), getY(y), Game.Graphics.playerHeight, Game.Graphics.playerWidth);
+            Game.Player.tiles++; 
+        }); 
+    });
+
+    // Capture target values
+    const targetX = getX(); 
+    const targetY = getY();
+
+    fill(color(0, 40, 0))
+    rect(targetX, targetY, Game.Graphics.playerWidth, Game.Graphics.playerHeight);
+
+    const dx = targetX - Game.Graphics.playerX; 
+    const dy = targetY - Game.Graphics.playerY;
+
+    Game.Graphics.playerX += dx * Game.Graphics.easing; 
+    Game.Graphics.playerY += dy * Game.Graphics.easing; 
+
+    fill(color(0, 0, 255));
+    rect(Game.Graphics.playerX, Game.Graphics.playerY, Game.Graphics.playerWidth, Game.Graphics.playerHeight);
+    textSize(30);
+    text(Game.Player.value, Game.Graphics.playerX, Game.Graphics.playerY);
+
+    text(`Score: ${Game.Player.tiles}`, 50, 50);
+    text(`Time: ${Math.floor(Game.State.time / 100)}${Game.State.state > 0 ? " (YOU LOST)" : ""}` , 50, 100);
+    text(`(MAINTAIN SQUARE VALUE BETWEEN 0 AND 100 INCLUSIVE)`, 50, 150)
+    
+    Game.State.time += Game.State.state < 1 ? deltaTime : 0;
 }
 
 function loseSequence() {
-    
+    if (Game.Player.value < Game.Rules.lowerValueBound || Game.Player.value > Game.Rules.upperValueBound)
+        Game.State.state = 1; 
 }
