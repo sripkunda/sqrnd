@@ -8,3 +8,5 @@ A very simple game made in JavaScript for the game development merit badge.
 2. Every time you visit a tile that has already been visited, your value increments by the previous value of the square, doubled and negated. (`tileValue *= -2`)
 3. Keep your player value (the number that shows up on top of the square) between 0 and 100 (inclusive), and visit as many times as possible in the least amount of time possible
 4. The game is infinite, so have fun.
+
+Play at https://sripkunda.github.io/sqrnd/
