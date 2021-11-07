@@ -27,7 +27,14 @@ const Game = {
         randomStartY: Math.random() * window.innerHeight * 0.6, 
         playerStep: 50,
         easing: 0.3,
-        frameRate: 30, 
+        frameRate: 30,
+		Colors: {
+			background: [10, 10, 10],
+			player: [255, 255, 255],
+			originTile: [150, 150, 150], 
+			targetTile: [150, 150, 150],
+			visitedTile: [50, 50, 50], 
+		}
     },
     Rules: {
         lowerValueBound: 0, 
@@ -103,18 +110,18 @@ function setup() {
 } 
 
 function draw() {
-    background(10);     
+
+	const colors = Game.Graphics.Colors; 
+
+    background(...colors.background);     
     noStroke(0);
 
     Game.Player.tiles = 0; 
 
     Object.keys(Game.State.tileValues).forEach(x => {
         Object.keys(Game.State.tileValues[x]).forEach(y => {
-            fill(color(
-                    0,
-                    x == 0 && y == 0 ? 40 : 0,
-                    x == 0 && y == 0 ? 0 : 40
-                ))
+			const c = x == 0 && y == 0 ? color(...colors.originTile) : color(...colors.visitedTile);
+            fill(c)
             rect(getX(x), getY(y), Game.Graphics.playerHeight, Game.Graphics.playerWidth);
             Game.Player.tiles++; 
         }); 
@@ -124,7 +131,7 @@ function draw() {
     const targetX = getX(); 
     const targetY = getY();
 
-    fill(color(0, 40, 0))
+    fill(color(...colors.targetTile))
     rect(targetX, targetY, Game.Graphics.playerWidth, Game.Graphics.playerHeight);
 
     const dx = targetX - Game.Graphics.playerX; 
@@ -133,14 +140,13 @@ function draw() {
     Game.Graphics.playerX += dx * Game.Graphics.easing; 
     Game.Graphics.playerY += dy * Game.Graphics.easing; 
 
-    fill(color(0, 0, 255));
+    fill(color(...colors.player));
     rect(Game.Graphics.playerX, Game.Graphics.playerY, Game.Graphics.playerWidth, Game.Graphics.playerHeight);
     textSize(30);
     text(Game.Player.value, Game.Graphics.playerX, Game.Graphics.playerY);
 
     text(`Score: ${Game.Player.tiles}`, 50, 50);
     text(`Time: ${Math.floor(Game.State.time / 100)}${Game.State.state > 0 ? " (YOU LOST)" : ""}` , 50, 100);
-    text(`(MAINTAIN SQUARE VALUE BETWEEN 0 AND 100 INCLUSIVE)`, 50, 150)
     
     Game.State.time += Game.State.state < 1 ? deltaTime : 0;
 }
