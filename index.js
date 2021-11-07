@@ -26,7 +26,7 @@ const Game = {
         randomStartX: Math.random() * window.innerWidth * 0.6, 
         randomStartY: Math.random() * window.innerHeight * 0.6, 
         playerStep: 50,
-        easing: 0.05,
+        easing: 0.3,
         frameRate: 30, 
     },
     Rules: {
