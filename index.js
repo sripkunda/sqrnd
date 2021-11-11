@@ -38,7 +38,8 @@ const Game = {
     },
     Rules: {
         lowerValueBound: 0, 
-        upperValueBound: 100,
+        upperValueBound: 200,
+        incrementAmount: -5,
     }
 }
 
@@ -82,7 +83,7 @@ function move(act) {
     act(); 
     const pos = Game.Player.pos;
     if (!Game.State.tileValues[pos.x]) Game.State.tileValues[pos.x] = {};
-    const inc = Game.State.tileValues[pos.x][pos.y] !== undefined ? Game.State.tileValues[pos.x][pos.y] * -2 : Math.floor(Math.random() * 10);
+    const inc = Game.State.tileValues[pos.x][pos.y] !== undefined ? Game.State.tileValues[pos.x][pos.y] * Game.Rules.incrementAmount : Math.floor(Math.random() * 10);
     Game.State.tileValues[pos.x][pos.y] = inc; 
     Game.Player.value += inc;
     loseSequence();
