@@ -37,7 +37,7 @@ const Game = {
 		}
     },
     Rules: {
-        lowerValueBound: 0, 
+        lowerValueBound: 0,
         upperValueBound: 200,
         incrementAmount: -5,
     }
